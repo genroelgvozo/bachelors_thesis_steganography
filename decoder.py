@@ -1,5 +1,6 @@
 import numpy
 import math
+
 from hamming_decoder import HammingDecoder
 
 
@@ -12,7 +13,7 @@ class BinaryMessage:
     def set_bitslen(self):
         self.bitslen = len(self.bits)
 
-    def save_text(self):
+    def save_text(self, hamming):
         output = open(self.output_txt, 'w')
         output.truncate()
 
@@ -24,31 +25,42 @@ class BinaryMessage:
         code = HammingDecoder()
 
         self.set_bitslen()
-
         for i in range(self.bitslen):
             bin_ord += str(self.bits[i])
             counter += 1
-            if counter == 7:
-                if flag:
-                    right = code.decode(bin_ord)
-                    symb_ord = int(left + right, 2)
+            if hamming:
+                if counter == 7:
+                    if flag:
+                        right = code.decode(bin_ord)
+                        symb_ord = int(left + right, 2)
 
+                        if symb_ord == 152 or 0 <= symb_ord <= 2:
+                            letter = ' '
+                        else:
+                            byte_ord = int(symb_ord).to_bytes(1, byteorder='little')
+                            letter = byte_ord.decode("cp1251")
+
+                        output.write(letter)
+
+                        flag = False
+                        left, right = "", ""
+                    else:
+                        left = code.decode(bin_ord)
+                        flag = True
+                    bin_ord = ''
+                    counter = 0
+            else:
+                if counter == 8:
+                    symb_ord = int(bin_ord, 2)
                     if symb_ord == 152 or 0 <= symb_ord <= 2:
                         letter = ' '
                     else:
                         byte_ord = int(symb_ord).to_bytes(1, byteorder='little')
+                        print(byte_ord)
                         letter = byte_ord.decode("cp1251")
-
                     output.write(letter)
-
-                    flag = False
-                    left, right = "", ""
-                else:
-                    left = code.decode(bin_ord)
-                    flag = True
-                bin_ord = ''
-                counter = 0
-
+                    bin_ord = ''
+                    counter = 0
         output.close()
 
 
@@ -102,7 +114,7 @@ class System:
         else:
             return "1"
 
-    def extract_stegomessage(self):
+    def extract_stegomessage(self, hamming):
         counter = self.key.begin
         section_counter = 0
 
@@ -117,5 +129,5 @@ class System:
                 counter += self.diff
                 section_counter = 0
 
-        self.message.save_text()
+        self.message.save_text(hamming)
 

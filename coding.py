@@ -10,6 +10,8 @@ print("Введите название файла аудиозаписи с ра
 audio = input()
 print("Введите название файла сообщения с расширением:")
 text = input()
+print("Защищать сообщение от помех?")
+hamming = bool(input())
 
 audioconverter = WavConverter()
 if audioconverter.is_needed(audio):
@@ -17,7 +19,7 @@ if audioconverter.is_needed(audio):
     print("Для дальнейшей работы аудиозапись была переведена в формат wav.")
 
 signal = Wave(audio)
-message = BinaryMessage(text)
+message = BinaryMessage(text, hamming)
 key = Key()
 
 stegosystem = System(signal, message, key)

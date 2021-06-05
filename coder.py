@@ -1,11 +1,12 @@
 import math
 import numpy
 import random
+
 from hamming_coder import HammingCoder
 
 
 class BinaryMessage:
-    def __init__(self, input_txt):
+    def __init__(self, input_txt, hamming):
         self.bits = []
         self.input = open(input_txt, 'r')
 
@@ -15,16 +16,20 @@ class BinaryMessage:
             symb_ord = ord(ch.encode('cp1251'))
             bin_ord = bin(symb_ord)[2:].zfill(8)
 
-            left = bin_ord[:4]
-            encoded_left = code.encode(left)
-            for k in encoded_left:
-                self.bits.append(int(k))
+            if hamming:
+                left = bin_ord[:4]
+                encoded_left = code.encode(left)
+                for k in encoded_left:
+                    self.bits.append(int(k))
 
-            right = bin_ord[4:]
-            encoded_right = code.encode(right)
-            for k in encoded_right:
-                self.bits.append(int(k))
-
+                right = bin_ord[4:]
+                encoded_right = code.encode(right)
+                for k in encoded_right:
+                    self.bits.append(int(k))
+            else:
+                print(bin_ord)
+                for k in bin_ord:
+                    self.bits.append(int(k))
         self.average = numpy.mean(self.bits)
         self.bitslen = len(self.bits)
 
